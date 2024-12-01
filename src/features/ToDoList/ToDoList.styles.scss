@@ -1,0 +1,20 @@
+.input-box {
+    display: flex;
+    margin-top: 2rem;
+    width: 20rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+ol {
+    padding: 0;
+    width: 50rem;
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.addtask-button {
+    margin-left: 1rem;
+}
