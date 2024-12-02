@@ -22,3 +22,13 @@ li {
     font-weight: bold;
     color: #0099FF;
 }
+
+.todo-item {
+    cursor: move;
+    transition: transform 0.2s ease;
+}
+
+.task-name.completed {
+    text-decoration: line-through;
+    color: gray;
+  }

@@ -1,11 +1,14 @@
 .input-box {
     display: flex;
     margin-top: 2rem;
-    width: 20rem;
+    width: 25rem;
     margin-left: auto;
     margin-right: auto;
 }
 
+input {
+    flex: 1;
+}
 ol {
     padding: 0;
     width: 50rem;
@@ -15,6 +18,6 @@ ol {
     margin-right: auto;
 }
 
-.addtask-button {
+.addtask-button, .filter-button {
     margin-left: 1rem;
 }
