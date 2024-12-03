@@ -1,66 +1,111 @@
 import React, { useState} from 'react';     
 import './ToDoItem.styles.scss';
-import { Button } from "antd";
-import { Checkbox } from 'antd';
-import type { CheckboxProps } from 'antd';
-
+import { Button,
+    message,
+    Popconfirm,
+    PopconfirmProps,
+    Checkbox,
+    CheckboxProps,
+    Modal,
+    Input } from 'antd';
+import { observer } from "mobx-react-lite";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { TaskStatuses } from '../../app/types/TaskStatuses';
 
 interface ToDoItemProps {
-    task: string; 
-    status: string;
-    index: number; 
+    id: number;
+    title: string; 
+    status: TaskStatuses;
+    isCompleted: boolean;
+    toggleTask: (index: number) => void;
     deleteTask: (index: number) => void; 
-    editTask: (index: number) => void; 
-
-    dragStartHandler: (e: React.DragEvent, index: number) => void;
-    dragOverHandler: (e: React.DragEvent) => void;
-    dragEndHandler: (e: React.DragEvent) => void;
-    dropHandler: (e: React.DragEvent, index: number) => void;
+    //editTask: (index: number) => void; 
 }
 
+const confirm: PopconfirmProps['onConfirm'] = (e) => {
+    console.log(e);
+    message.success('Task was deleted');
+  };
+  
+  const cancel: PopconfirmProps['onCancel'] = (e) => {
+    console.log(e);
+  };
+  
+const ToDoItem: React.FC<ToDoItemProps> = ({
+    id,
+    title,
+    status,
+    isCompleted,
+    toggleTask,
+    deleteTask
+    }) => {
 
+    const { attributes, listeners, setNodeRef, transform, transition,  } = useSortable({ id });
 
-const ToDoItem: React.FC<ToDoItemProps> = ({task, status, index, deleteTask, 
-    editTask, dragStartHandler, dragOverHandler, dragEndHandler, dropHandler}) => {
-    
-    const [isCompleted, setIsCompleted] = useState(false);
-    
-    const onChange: CheckboxProps['onChange'] = (e) => {
-        setIsCompleted(e.target.checked);
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition: transition || "transform 100ms ease",
+    };
+
+    const handleConfirm = () => {
+        deleteTask(id); 
+        confirm(undefined); 
+    };
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleOk = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
     };
 
     return (
-        <li
-            className="todo-item"
-            draggable="true"
-            onDragStart={(e) => dragStartHandler(e, index)}
-            onDragOver={dragOverHandler}
-            onDragEnd={dragEndHandler}
-            onDrop={(e) => dropHandler(e, index)}>
+        <li className="todo-item" ref={setNodeRef} style={style} {...attributes} {...listeners}>
 
-            <Checkbox checked={isCompleted} onChange={onChange}></Checkbox>  
+            <Checkbox checked={status === TaskStatuses.Done} onChange={() => toggleTask(id)}></Checkbox>  
 
-            <span className={`task-name ${isCompleted ? 'completed' : ''}`}>{task}</span>
-            <span className="status-text">ToDo</span>
+            <span className={`task-name ${status === TaskStatuses.Done? 'completed' : ''}`}>{title}</span>
+            <span className="status-text">{status}</span>
             
             <Button 
                 className="edit-button"
                 color="default" 
                 variant="filled"
-                onClick={() => editTask(index)}>
+                onClick={showModal}>
                 Edit
             </Button>
-            <Button
-                className="delete-button"
-                color="danger" 
-                variant="solid"
-                onClick={() => deleteTask(index)}>
-                Delete
-            </Button>
             
+            <Modal title="Edit your task" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
+                <p className="modal-text">Title</p>
+                <Input type="text" value={title}/>
+                <p className="modal-text">Description</p>
+                <Input type="text"/>
+                <p className="modal-text">Status</p>
+                <span>ToDo</span>
+                <span>In Progres</span>
+                <span>Done</span>
+            </Modal>
+            <Popconfirm
+                title="Delete the task"
+                description="Are you sure to delete this task?"
+                onConfirm={handleConfirm}
+                onCancel={cancel}
+                okText="Yes"
+                cancelText="No">
+                    <Button danger className="delete-button">
+                        Delete
+                    </Button>
+            </Popconfirm>
         </li>
-
     );
 }
 
-export default ToDoItem
+export default observer(ToDoItem)

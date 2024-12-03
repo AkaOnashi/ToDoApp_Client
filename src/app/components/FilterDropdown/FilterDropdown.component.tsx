@@ -31,7 +31,7 @@ const items: MenuProps['items'] = [
   ];
   
   const FilterDropdown: React.FC = () => (
-    <Dropdown menu={{ items }} placement="bottom">
+    <Dropdown menu={{ items }}  placement="bottom">
           <Button>Filter</Button>
     </Dropdown>
   );

@@ -1,61 +1,52 @@
 import React, { useState} from 'react';
 import './ToDoList.styles.scss';
+import { observer } from "mobx-react-lite";
+import ToDoListStore from '../../app/stores/ToDoList-store';
 import ToDoItem from '../ToDoItem/ToDoItem.component';
-import { Button } from "antd";
-import { Input } from 'antd';
+import { Button, Input, Modal} from "antd";
+import { TaskStatuses } from '../../app/types/TaskStatuses';
 import FilterDropdown from '../../app/components/FilterDropdown/FilterDropdown.component';
-
+import {
+    DndContext,
+    closestCenter,
+    useSensor,
+    useSensors,
+    PointerSensor,
+} from "@dnd-kit/core";
+import {
+    SortableContext,
+    verticalListSortingStrategy,
+    arrayMove,
+} from "@dnd-kit/sortable";
 
 function ToDoList() {
-    const [tasks, setTasks] = useState(["Watch the video", "Visit the granny", "To be a chill guy"]);
     const[newTask, setNewTask] = useState("");
-    const [status, setNewStatus] = useState("ToDo");
-    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
     function handleInputChange(event:  React.ChangeEvent<HTMLInputElement>) {
         setNewTask(event.target.value);
     }
 
-    function addTask() {
-        if(newTask.trim() !== "") {
-            setTasks(t => [...t, newTask]);
-            setNewTask("");          
-        }
-        
-    }
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    );
 
-    function deleteTask(index: number) {
-        const updatedTask = tasks.filter((_, i) => i !== index);
-        setTasks(updatedTask);
-    }
+    const handleDragEnd = (event: any) => {
+        const { active, over } = event;
 
-    function editTask(index: number) {
+        if (!over || active.id === over.id) return;
 
-    }
+        const oldIndex = ToDoListStore.tasks.findIndex(
+            (task) => task.id === active.id
+        );
+        const newIndex = ToDoListStore.tasks.findIndex(
+            (task) => task.id === over.id
+        );
 
-    function dragStartHandler(e: React.DragEvent, index: number) {
-        setDraggedIndex(index);
-    }
+        ToDoListStore.tasks = arrayMove(ToDoListStore.tasks, oldIndex, newIndex);
+    };
 
-    function dragOverHandler(e: React.DragEvent) {
-        e.preventDefault();  
-    }
-
-    function dragEndHandler(e: React.DragEvent) {
-        setDraggedIndex(null);  
-    }
-
-    function dropHandler(e: React.DragEvent, index: number) {
-        e.preventDefault();
-        if (draggedIndex !== null) {
-            const updatedTasks = [...tasks];
-            const draggedTask = updatedTasks[draggedIndex];
-            updatedTasks.splice(draggedIndex, 1);
-            updatedTasks.splice(index, 0, draggedTask);  
-            setTasks(updatedTasks);  
-        }
-    }
-
+    
+  
     return(
         <div>
             <div className="input-box">
@@ -68,34 +59,41 @@ function ToDoList() {
             <Button
                 className="addtask-button"
                 type="primary"
-                onClick={addTask}>
+                onClick={() => {
+                    ToDoListStore.addTask(newTask);
+                    setNewTask("");
+                }}>
                 Add Task        
             </Button>
             <span className="filter-button">
                 <FilterDropdown/>
             </span>
-            
             </div>
-
             
-
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+            >
+            <SortableContext
+                items={ToDoListStore.tasks.map((task) => task.id)}
+                strategy={verticalListSortingStrategy}
+            >
             <ol>
-                {tasks.map((task, index) => 
+                {ToDoListStore.tasks.map((task) => 
                     <ToDoItem 
-                        key={index}
-                        task={task}
-                        status={status}
-                        index={index}
-                        deleteTask={deleteTask}
-                        editTask={editTask}
-                        
-                        dragStartHandler={dragStartHandler}
-                        dragOverHandler={dragOverHandler}
-                        dragEndHandler={dragEndHandler}
-                        dropHandler={dropHandler}/>
+                        id={task.id}
+                        key={task.id}
+                        title={task.title}
+                        status={task.status}
+                        isCompleted={task.isCompleted}
+                        toggleTask={ToDoListStore.toggleTask.bind(ToDoListStore)}
+                        deleteTask={ToDoListStore.deleteTask.bind(ToDoListStore)}/>
                 )}
             </ol>
+            </SortableContext>
+            </DndContext>
         </div>);
 }
 
-export default ToDoList
+export default observer(ToDoList)
