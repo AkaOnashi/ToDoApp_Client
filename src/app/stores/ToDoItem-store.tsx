@@ -1,8 +1,9 @@
+import { makeAutoObservable } from "mobx";
 
 class ToDoItemStore {
-
+    
     constructor() {
-       
+        makeAutoObservable(this);
     }
 
 

@@ -7,7 +7,9 @@ import { Button,
     Checkbox,
     CheckboxProps,
     Modal,
-    Input } from 'antd';
+    Input,
+    Flex,
+    Radio } from 'antd';
 import { observer } from "mobx-react-lite";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -16,11 +18,11 @@ import { TaskStatuses } from '../../app/types/TaskStatuses';
 interface ToDoItemProps {
     id: number;
     title: string; 
+    description: string;
     status: TaskStatuses;
-    isCompleted: boolean;
-    toggleTask: (index: number) => void;
-    deleteTask: (index: number) => void; 
-    //editTask: (index: number) => void; 
+    toggleTask: (id: number) => void;
+    deleteTask: (id: number) => void; 
+    updateTask: (id: number, newTitle: string, newDescription: string, newStatus: TaskStatuses) => void; 
 }
 
 const confirm: PopconfirmProps['onConfirm'] = (e) => {
@@ -35,17 +37,28 @@ const confirm: PopconfirmProps['onConfirm'] = (e) => {
 const ToDoItem: React.FC<ToDoItemProps> = ({
     id,
     title,
+    description,
     status,
-    isCompleted,
     toggleTask,
-    deleteTask
+    deleteTask,
+    updateTask
     }) => {
 
     const { attributes, listeners, setNodeRef, transform, transition,  } = useSortable({ id });
+    const [updatedTitle, setUpdatedTitle] = useState(title);
+    const [updatedStatus, setUpdatedStatus] = useState(status);
+    const [updatedDescription, setUpdatedDescription] = useState(description);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    const options = [
+        { label: 'ToDo', value: TaskStatuses.ToDo },
+        { label: 'In Progress', value: TaskStatuses.InProgress },
+        { label: 'Done', value: TaskStatuses.Done },
+      ];
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition: transition || "transform 100ms ease",
+        transition: transition,
     };
 
     const handleConfirm = () => {
@@ -53,14 +66,26 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
         confirm(undefined); 
     };
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    function handleUpdatedTitle(event:  React.ChangeEvent<HTMLInputElement>) {
+        setUpdatedTitle(event.target.value);
+    }
+
+    function handleUpdatedStatus(event: any) {
+        setUpdatedStatus(event.target.value);
+    }
+
+    function handleUpdatedDescription(event:  React.ChangeEvent<HTMLInputElement>) {
+        setUpdatedDescription(event.target.value);
+    }
 
     const showModal = () => {
         setIsModalOpen(true);
+        setUpdatedStatus(status);
     };
 
     const handleOk = () => {
         setIsModalOpen(false);
+        updateTask(id, updatedTitle, updatedDescription, updatedStatus)
     };
 
     const handleCancel = () => {
@@ -68,8 +93,10 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
     };
 
     return (
+        
         <li className="todo-item" ref={setNodeRef} style={style} {...attributes} {...listeners}>
-
+            
+            <div className="first-row">
             <Checkbox checked={status === TaskStatuses.Done} onChange={() => toggleTask(id)}></Checkbox>  
 
             <span className={`task-name ${status === TaskStatuses.Done? 'completed' : ''}`}>{title}</span>
@@ -85,13 +112,25 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
             
             <Modal title="Edit your task" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
                 <p className="modal-text">Title</p>
-                <Input type="text" value={title}/>
+                <Input 
+                    type="text"
+                    value={updatedTitle}
+                    onChange={handleUpdatedTitle}/>
+
                 <p className="modal-text">Description</p>
-                <Input type="text"/>
+                <Input 
+                    type="text"
+                    value={updatedDescription}
+                    onChange={handleUpdatedDescription}/>
+
                 <p className="modal-text">Status</p>
-                <span>ToDo</span>
-                <span>In Progres</span>
-                <span>Done</span>
+                <Flex vertical gap="middle">
+                    <Radio.Group 
+                    block options={options}
+                    value={updatedStatus}
+                    onChange={handleUpdatedStatus}
+                    optionType="button" />
+                </Flex>
             </Modal>
             <Popconfirm
                 title="Delete the task"
@@ -104,6 +143,10 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
                         Delete
                     </Button>
             </Popconfirm>
+            </div>
+            <div className="second-row">
+                <p className="description-text">{description}</p>
+            </div>
         </li>
     );
 }

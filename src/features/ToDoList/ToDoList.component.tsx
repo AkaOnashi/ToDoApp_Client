@@ -85,10 +85,11 @@ function ToDoList() {
                         id={task.id}
                         key={task.id}
                         title={task.title}
+                        description={task.description}
                         status={task.status}
-                        isCompleted={task.isCompleted}
                         toggleTask={ToDoListStore.toggleTask.bind(ToDoListStore)}
-                        deleteTask={ToDoListStore.deleteTask.bind(ToDoListStore)}/>
+                        deleteTask={ToDoListStore.deleteTask.bind(ToDoListStore)}
+                        updateTask={ToDoListStore.updateTask.bind(ToDoListStore)}/>
                 )}
             </ol>
             </SortableContext>
