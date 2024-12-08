@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, { useEffect, useState} from 'react';
 import './ToDoList.styles.scss';
 import { observer } from "mobx-react-lite";
 import ToDoListStore from '../../app/stores/ToDoList-store';
@@ -19,16 +19,29 @@ import {
     arrayMove,
 } from "@dnd-kit/sortable";
 
+
 function ToDoList() {
-    const[newTask, setNewTask] = useState("");
-
-    function handleInputChange(event:  React.ChangeEvent<HTMLInputElement>) {
-        setNewTask(event.target.value);
-    }
-
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
     );
+
+    const[newTask, setNewTask] = useState("");
+
+    useEffect(() => {
+        ToDoListStore.loadTasks();
+      }, []);
+
+    if (ToDoListStore.isLoading) {
+    return <p>Loading tasks...</p>;
+    }
+    
+    if (ToDoListStore.error) {
+    return <p>Error: {ToDoListStore.error}</p>;
+    }
+    
+    function handleInputChange(event:  React.ChangeEvent<HTMLInputElement>) {
+        setNewTask(event.target.value);
+    }
 
     const handleDragEnd = (event: any) => {
         const { active, over } = event;
@@ -54,13 +67,14 @@ function ToDoList() {
                 type="text"
                 placeholder="Enter a task..."
                 value={newTask}
-                onChange={handleInputChange} />
+                onChange={handleInputChange}
+                maxLength={70}/>
 
             <Button
                 className="addtask-button"
                 type="primary"
                 onClick={() => {
-                    ToDoListStore.addTask(newTask);
+                    ToDoListStore.addTask({title: newTask});
                     setNewTask("");
                 }}>
                 Add Task        
@@ -82,11 +96,8 @@ function ToDoList() {
             <ol>
                 {ToDoListStore.tasks.map((task) => 
                     <ToDoItem 
-                        id={task.id}
+                        task={task}
                         key={task.id}
-                        title={task.title}
-                        description={task.description}
-                        status={task.status}
                         toggleTask={ToDoListStore.toggleTask.bind(ToDoListStore)}
                         deleteTask={ToDoListStore.deleteTask.bind(ToDoListStore)}
                         updateTask={ToDoListStore.updateTask.bind(ToDoListStore)}/>

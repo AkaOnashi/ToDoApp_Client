@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.styles.scss';
 import Header from './app/layout/Header/Header';
 import ToDoList from './features/ToDoList/ToDoList.component';
 import chillGuy from './assets/images/chill-guy.png';
 
+
 function App() {
+  
   return (
     <>
     <div className="App">

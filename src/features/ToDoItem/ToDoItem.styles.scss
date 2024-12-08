@@ -49,8 +49,15 @@ li {
     color: #898787;
     margin: 0;
     margin-left: 26px;
+    width: 32rem;
+    text-align: justify;
+    
 }
 
 .modal-text {
     font-size: 1.2rem;
+}
+
+.description-modal {
+    height: auto;
 }

@@ -14,12 +14,10 @@ import { observer } from "mobx-react-lite";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { TaskStatuses } from '../../app/types/TaskStatuses';
+import { Task } from '../../app/types/Task.model';
 
 interface ToDoItemProps {
-    id: number;
-    title: string; 
-    description: string;
-    status: TaskStatuses;
+    task: Task;
     toggleTask: (id: number) => void;
     deleteTask: (id: number) => void; 
     updateTask: (id: number, newTitle: string, newDescription: string, newStatus: TaskStatuses) => void; 
@@ -35,20 +33,17 @@ const confirm: PopconfirmProps['onConfirm'] = (e) => {
   };
   
 const ToDoItem: React.FC<ToDoItemProps> = ({
-    id,
-    title,
-    description,
-    status,
+    task,
     toggleTask,
     deleteTask,
     updateTask
     }) => {
 
-    const { attributes, listeners, setNodeRef, transform, transition,  } = useSortable({ id });
-    const [updatedTitle, setUpdatedTitle] = useState(title);
-    const [updatedStatus, setUpdatedStatus] = useState(status);
-    const [updatedDescription, setUpdatedDescription] = useState(description);
+    const [updatedTitle, setUpdatedTitle] = useState(task.title);
+    const [updatedStatus, setUpdatedStatus] = useState(task.status);
+    const [updatedDescription, setUpdatedDescription] = useState(task.description);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { attributes, listeners, setNodeRef, transform, transition,  } = useSortable({ id: task.id, disabled: isModalOpen });
     
     const options = [
         { label: 'ToDo', value: TaskStatuses.ToDo },
@@ -62,7 +57,7 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
     };
 
     const handleConfirm = () => {
-        deleteTask(id); 
+        deleteTask(task.id); 
         confirm(undefined); 
     };
 
@@ -80,12 +75,14 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
 
     const showModal = () => {
         setIsModalOpen(true);
-        setUpdatedStatus(status);
+        setUpdatedStatus(task.status);
+        
     };
 
     const handleOk = () => {
         setIsModalOpen(false);
-        updateTask(id, updatedTitle, updatedDescription, updatedStatus)
+        
+        updateTask(task.id, updatedTitle, updatedDescription, updatedStatus)
     };
 
     const handleCancel = () => {
@@ -97,10 +94,10 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
         <li className="todo-item" ref={setNodeRef} style={style} {...attributes} {...listeners}>
             
             <div className="first-row">
-            <Checkbox checked={status === TaskStatuses.Done} onChange={() => toggleTask(id)}></Checkbox>  
+            <Checkbox checked={task.status === TaskStatuses.Done} onChange={() => toggleTask(task.id)}></Checkbox>  
 
-            <span className={`task-name ${status === TaskStatuses.Done? 'completed' : ''}`}>{title}</span>
-            <span className="status-text">{status}</span>
+            <span className={`task-name ${task.status === TaskStatuses.Done? 'completed' : ''}`}>{task.title}</span>
+            <span className="status-text">{task.status}</span>
             
             <Button 
                 className="edit-button"
@@ -115,13 +112,16 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
                 <Input 
                     type="text"
                     value={updatedTitle}
-                    onChange={handleUpdatedTitle}/>
+                    onChange={handleUpdatedTitle}
+                    maxLength={70}/>
 
                 <p className="modal-text">Description</p>
-                <Input 
+                <Input
+                    className="description-modal" 
                     type="text"
                     value={updatedDescription}
-                    onChange={handleUpdatedDescription}/>
+                    onChange={handleUpdatedDescription}
+                    maxLength={500}/>
 
                 <p className="modal-text">Status</p>
                 <Flex vertical gap="middle">
@@ -145,7 +145,7 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
             </Popconfirm>
             </div>
             <div className="second-row">
-                <p className="description-text">{description}</p>
+                <p className="description-text">{task.description}</p>
             </div>
         </li>
     );

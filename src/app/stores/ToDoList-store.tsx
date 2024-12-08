@@ -1,48 +1,90 @@
-import { makeAutoObservable } from "mobx";
-import { TaskStatuses } from '../types/TaskStatuses';
+import { makeAutoObservable, runInAction  } from "mobx";
+import { TaskStatuses, mapBackendStatusToEnum } from '../types/TaskStatuses';
+import { fetchTasks, createTask, deleteTaskApi, updateTaskApi } from '../../app/api/task.api';
+import { Task } from "../types/Task.model";
 
 class ToDoListStore {
-    tasks: { id: number, description: string , title: string; status: TaskStatuses }[] = [
-        { id: 1, description: "", title: "Watch the video", status: TaskStatuses.ToDo },
-        { id: 2, description: "Apple street, house 21" ,title: "Visit the granny", status: TaskStatuses.InProgress },
-        { id: 3, description: "", title: "To be a chill guy", status: TaskStatuses.Done },
-    ];
+    tasks: Task[] = [];
+
+    isLoading: boolean = false;
+    error: string | null = null;
 
     constructor() {
         makeAutoObservable(this);
+    }
+
+    async loadTasks() {
+        this.isLoading = true;
+        this.error = null;
+        try {
+          const tasks = await fetchTasks();
+          this.tasks = tasks.map((task: any) => ({
+            ...task,
+            status: mapBackendStatusToEnum(task.status)
+          }));
+        } catch (error) {
+          this.error = "Failed to load tasks";
+          console.error(error);
+        } finally {
+          this.isLoading = false;
+        }
+    }
+
+    async addTask(task: Partial<Task>) {
+        const newTask: Task = {
+            id: 0,
+            title: task.title || "New Task",
+            description: task.description || "",
+            status: task.status || TaskStatuses.ToDo,
+        };
+
+        try {
+            const createdTask: Task = await createTask(newTask);
+            newTask.id = createdTask.id;
+            runInAction(() => {
+                this.tasks.push(newTask);
+            })
+            
+            console.log(newTask.id);
+            
+          } catch (error) {
+            this.error = "Failed to create a task";
+            console.error(error);
+          }
     }
 
     handleStatusCompleted () {
 
     }
 
-    addTask(title: string) {
-        const newId = this.tasks.length > 0 ? this.tasks[this.tasks.length - 1].id + 1 : 1;
-        console.log("newId: " + newId);
-        if (title.trim() !== "") {
-            this.tasks.push({id: newId, title, description: "", status: TaskStatuses.ToDo});
+    async deleteTask(id: number) {
+        try {
+            this.tasks = this.tasks.filter(task => task.id !== id);
+            await deleteTaskApi(id);
+        }
+        catch(e) {
+            console.error("Failed to delete task");
         }
     }
 
-    deleteTask(id: number) {
-        this.tasks = this.tasks.filter(task => task.id !== id);
-    }
-
-    updateTask(id: number, newTitle: string, newDescription: string, newStatus: TaskStatuses) {
+    async updateTask(id: number, newTitle: string, newDescription: string, newStatus: TaskStatuses) {
         const task = this.tasks.find(task => task.id === id);
         if (task) {
             task.title = newTitle;
             task.status = newStatus;
             task.description = newDescription;
+
+            await updateTaskApi(task);
         }
     };
 
-    toggleTask(id: number) {
+    async toggleTask(id: number) {
         const task = this.tasks.find(task => task.id === id);
         if(task){
             task.status = task.status === TaskStatuses.Done 
             ? TaskStatuses.ToDo 
             : TaskStatuses.Done;
+            await updateTaskApi(task);
         }
     }
 }
