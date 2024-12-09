@@ -9,9 +9,20 @@ const instance = axios.create({
     },
 });
 
-export const fetchTasks = async () => {
+export const getTasks = async () => {
     try {
         const response = await instance.get("/tasks");
+        console.log(response);
+        return response.data;
+    }
+    catch(e) {
+        console.log(e);
+    }
+}
+
+export const getTasksByStatus = async (number: number) => {
+    try {
+        const response = await instance.get(`/tasks/status/${number}`);
         console.log(response);
         return response.data;
     }

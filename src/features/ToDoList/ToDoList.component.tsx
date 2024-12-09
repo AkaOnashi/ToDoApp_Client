@@ -5,7 +5,7 @@ import ToDoListStore from '../../app/stores/ToDoList-store';
 import ToDoItem from '../ToDoItem/ToDoItem.component';
 import { Button, Input, Modal} from "antd";
 import { TaskStatuses } from '../../app/types/TaskStatuses';
-import FilterDropdown from '../../app/components/FilterDropdown/FilterDropdown.component';
+import SelectFilter from '../../app/components/SelectFilter/SelectFilter.component';
 import {
     DndContext,
     closestCenter,
@@ -18,7 +18,7 @@ import {
     verticalListSortingStrategy,
     arrayMove,
 } from "@dnd-kit/sortable";
-
+import { FilterOutlined, PlusOutlined } from '@ant-design/icons';
 
 function ToDoList() {
     const sensors = useSensors(
@@ -26,10 +26,11 @@ function ToDoList() {
     );
 
     const[newTask, setNewTask] = useState("");
+    const [currentStatus, setCurrentStatus] = useState<number>(3);
 
     useEffect(() => {
-        ToDoListStore.loadTasks();
-      }, []);
+        ToDoListStore.loadTasks(currentStatus);
+      }, [currentStatus]);
 
     if (ToDoListStore.isLoading) {
     return <p>Loading tasks...</p>;
@@ -58,10 +59,13 @@ function ToDoList() {
         ToDoListStore.tasks = arrayMove(ToDoListStore.tasks, oldIndex, newIndex);
     };
 
-    
+    const handleFilterChange = (value: number) => {
+        setCurrentStatus(value);
+    };
   
     return(
         <div>
+            <div className="nav-box">
             <div className="input-box">
             <Input
                 type="text"
@@ -77,13 +81,15 @@ function ToDoList() {
                     ToDoListStore.addTask({title: newTask});
                     setNewTask("");
                 }}>
+            <PlusOutlined />
                 Add Task        
             </Button>
-            <span className="filter-button">
-                <FilterDropdown/>
-            </span>
             </div>
-            
+            <div className="filter-button">
+                <SelectFilter value={currentStatus} onChange={handleFilterChange}/>
+            </div>
+            </div>
+
             <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}

@@ -1,14 +1,23 @@
-.input-box {
+.nav-box {
     display: flex;
     margin-top: 2rem;
-    width: 25rem;
     margin-left: auto;
     margin-right: auto;
+    justify-content: space-between;
+    width: 49rem;
+}
+.input-box {
+    display: flex;
+}
+
+.filter-button {
+    margin: 0;
 }
 
 input {
     flex: 1;
 }
+
 ol {
     padding: 0;
     width: 50rem;

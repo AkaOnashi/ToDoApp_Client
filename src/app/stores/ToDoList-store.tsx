@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction  } from "mobx";
 import { TaskStatuses, mapBackendStatusToEnum } from '../types/TaskStatuses';
-import { fetchTasks, createTask, deleteTaskApi, updateTaskApi } from '../../app/api/task.api';
+import { getTasks, createTask, deleteTaskApi, updateTaskApi, getTasksByStatus } from '../../app/api/task.api';
 import { Task } from "../types/Task.model";
 
 class ToDoListStore {
@@ -13,15 +13,24 @@ class ToDoListStore {
         makeAutoObservable(this);
     }
 
-    async loadTasks() {
+    async loadTasks(status: number) {
         this.isLoading = true;
         this.error = null;
+        let tasks;
+
         try {
-          const tasks = await fetchTasks();
-          this.tasks = tasks.map((task: any) => ({
-            ...task,
-            status: mapBackendStatusToEnum(task.status)
-          }));
+            if(status === 3) {
+                tasks = await getTasks();
+            } 
+            else {
+                tasks = await getTasksByStatus(status);
+            }
+
+            this.tasks = tasks.map((task: any) => ({
+                ...task,
+                status: mapBackendStatusToEnum(task.status)
+            }));
+            
         } catch (error) {
           this.error = "Failed to load tasks";
           console.error(error);

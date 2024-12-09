@@ -9,12 +9,19 @@ import { Button,
     Modal,
     Input,
     Flex,
-    Radio } from 'antd';
+    Radio,
+    Slider, 
+    Switch, 
+    Typography } from 'antd';
 import { observer } from "mobx-react-lite";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { TaskStatuses } from '../../app/types/TaskStatuses';
 import { Task } from '../../app/types/Task.model';
+import TruncatedText from '../../app/components/TruncutedText/TruncutedText.component';
+import { DeleteOutlined } from '@ant-design/icons';
+
+const { TextArea } = Input;
 
 interface ToDoItemProps {
     task: Task;
@@ -69,7 +76,7 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
         setUpdatedStatus(event.target.value);
     }
 
-    function handleUpdatedDescription(event:  React.ChangeEvent<HTMLInputElement>) {
+    function handleUpdatedDescription(event:  React.ChangeEvent<HTMLTextAreaElement>) {
         setUpdatedDescription(event.target.value);
     }
 
@@ -94,10 +101,13 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
         <li className="todo-item" ref={setNodeRef} style={style} {...attributes} {...listeners}>
             
             <div className="first-row">
+            
             <Checkbox checked={task.status === TaskStatuses.Done} onChange={() => toggleTask(task.id)}></Checkbox>  
 
             <span className={`task-name ${task.status === TaskStatuses.Done? 'completed' : ''}`}>{task.title}</span>
-            <span className="status-text">{task.status}</span>
+            <span className={`status-text ${task.status === TaskStatuses.ToDo ? 'to-do' :
+                task.status === TaskStatuses.InProgress ? 'in-progress' : 'done'
+            }`}>{task.status}</span>
             
             <Button 
                 className="edit-button"
@@ -116,12 +126,13 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
                     maxLength={70}/>
 
                 <p className="modal-text">Description</p>
-                <Input
-                    className="description-modal" 
-                    type="text"
+                <TextArea
+                    className="description-modal"
+                    rows={5} 
+                    placeholder="Maximum Length is 500"
+                    maxLength={500}
                     value={updatedDescription}
-                    onChange={handleUpdatedDescription}
-                    maxLength={500}/>
+                    onChange={handleUpdatedDescription}/>
 
                 <p className="modal-text">Status</p>
                 <Flex vertical gap="middle">
@@ -140,12 +151,16 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
                 okText="Yes"
                 cancelText="No">
                     <Button danger className="delete-button">
-                        Delete
+                        <DeleteOutlined/>
                     </Button>
             </Popconfirm>
             </div>
             <div className="second-row">
-                <p className="description-text">{task.description}</p>
+                <div >
+                    <TruncatedText 
+                        text={task.description}
+                        maxLength={70} />
+                </div>
             </div>
         </li>
     );

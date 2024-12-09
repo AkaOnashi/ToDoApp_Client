@@ -25,14 +25,24 @@ li {
     margin-left: 10px;
 }
 
+.delete-button {
+    padding: 10px;
+}
+
 .status-text {
     font-size: 1rem;
     font-weight: bold;
-    color: #0099FF;
+    
 }
 
 .todo-item {
     transition: transform 200ms ease, opacity 200ms ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.todo-item > * {
+    flex-shrink: 0 !important;
 }
 
 .todo-item.is-dragging {
@@ -51,7 +61,11 @@ li {
     margin-left: 26px;
     width: 32rem;
     text-align: justify;
-    
+}
+
+.description-text.button {
+    font-style: italic;
+    cursor: pointer;
 }
 
 .modal-text {
@@ -60,4 +74,16 @@ li {
 
 .description-modal {
     height: auto;
+}
+
+.status-text.to-do {
+    color: #0099FF;
+}
+
+.status-text.in-progress {
+    color: #FFAE00; 
+}
+
+.status-text.done {
+    color: #A1A0A0;
 }
