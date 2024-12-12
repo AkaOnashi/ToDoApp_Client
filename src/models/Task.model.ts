@@ -1,4 +1,4 @@
-import { TaskStatuses } from "./TaskStatuses";
+import { TaskStatuses } from "../app/types/TaskStatuses";
 
 export type Task = {
     id: number;

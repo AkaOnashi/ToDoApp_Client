@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Task } from "../types/Task.model";
+import { Task } from "../../models/Task.model";
 import { mapEnumStatusToBackend, TaskStatuses } from "../types/TaskStatuses";
 
 const instance = axios.create({

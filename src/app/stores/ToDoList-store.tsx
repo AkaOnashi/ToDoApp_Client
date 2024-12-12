@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction  } from "mobx";
 import { TaskStatuses, mapBackendStatusToEnum } from '../types/TaskStatuses';
 import { getTasks, createTask, deleteTaskApi, updateTaskApi, getTasksByStatus } from '../../app/api/task.api';
-import { Task } from "../types/Task.model";
+import { Task } from "../../models/Task.model";
 
 class ToDoListStore {
     tasks: Task[] = [];

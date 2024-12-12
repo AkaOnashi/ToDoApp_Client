@@ -17,7 +17,7 @@ import { observer } from "mobx-react-lite";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { TaskStatuses } from '../../app/types/TaskStatuses';
-import { Task } from '../../app/types/Task.model';
+import { Task } from '../../models/Task.model';
 import TruncatedText from '../../app/components/TruncutedText/TruncutedText.component';
 import { DeleteOutlined } from '@ant-design/icons';
 
@@ -28,6 +28,7 @@ interface ToDoItemProps {
     toggleTask: (id: number) => void;
     deleteTask: (id: number) => void; 
     updateTask: (id: number, newTitle: string, newDescription: string, newStatus: TaskStatuses) => void; 
+    className?: string;
 }
 
 const confirm: PopconfirmProps['onConfirm'] = (e) => {
@@ -43,14 +44,15 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
     task,
     toggleTask,
     deleteTask,
-    updateTask
+    updateTask,
+    className
     }) => {
 
     const [updatedTitle, setUpdatedTitle] = useState(task.title);
     const [updatedStatus, setUpdatedStatus] = useState(task.status);
     const [updatedDescription, setUpdatedDescription] = useState(task.description);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const { attributes, listeners, setNodeRef, transform, transition,  } = useSortable({ id: task.id, disabled: isModalOpen });
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: isModalOpen });
     
     const options = [
         { label: 'ToDo', value: TaskStatuses.ToDo },
@@ -58,9 +60,11 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
         { label: 'Done', value: TaskStatuses.Done },
       ];
 
+
     const style = {
         transform: CSS.Transform.toString(transform),
         transition: transition,
+        scale: isDragging ? '1' : 'none'
     };
 
     const handleConfirm = () => {
@@ -98,7 +102,7 @@ const ToDoItem: React.FC<ToDoItemProps> = ({
 
     return (
         
-        <li className="todo-item" ref={setNodeRef} style={style} {...attributes} {...listeners}>
+        <li className={`todo-item ${className} ${isDragging ? 'dragging' : ''}`} ref={setNodeRef} style={style} {...attributes} {...listeners}>
             
             <div className="first-row">
             

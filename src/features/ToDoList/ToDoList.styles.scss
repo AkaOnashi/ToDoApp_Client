@@ -30,3 +30,15 @@ ol {
 .addtask-button, .filter-button {
     margin-left: 1rem;
 }
+
+@keyframes wiggle {
+    0% { transform: scale(1.01) rotate(-1deg); }
+    50% { transform: scale(1.01) rotate(1deg); }
+    100% { transform: scale(1.01) rotate(-1deg); }
+}
+
+.dragging-item {
+    animation: wiggle 2s infinite;
+    transition: transform 0.3s ease; 
+    cursor: grabbing; 
+}

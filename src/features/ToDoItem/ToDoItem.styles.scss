@@ -36,18 +36,21 @@ li {
 }
 
 .todo-item {
-    transition: transform 200ms ease, opacity 200ms ease;
-    overflow: hidden;
-    position: relative;
+    transition: transform 0.2s ease-in-out;
+}
+
+.todo-item.dragging {
+    border: 2px dashed #0099FF;
+    background-color: rgba(240, 240, 240, 0);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.todo-item.dragging * {
+    opacity: 0;
 }
 
 .todo-item > * {
     flex-shrink: 0 !important;
-}
-
-.todo-item.is-dragging {
-    opacity: 0.7; 
-    transform: scale(1.05); 
 }
 
 .task-name.completed {
